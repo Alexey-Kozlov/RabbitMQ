@@ -32,7 +32,7 @@ namespace RabbitMQ
             _rabbitProvider.Bind();
         }
 
-        public void Publish<T>(string routingKey, string message) where T : IMessage
+        public void Publish<T>(string routingKey, string message)
         {
             _rabbitProvider.Send(message, routingKey);
         }

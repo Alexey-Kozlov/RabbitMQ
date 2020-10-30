@@ -1,5 +1,6 @@
 ﻿using System;
 using Serilog;
+using System.Configuration;
 
 namespace RabbitReceiverConsole
 {
@@ -11,14 +12,21 @@ namespace RabbitReceiverConsole
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
                 .CreateLogger();
-            var credentials = new MqCredentials(Environment.GetEnvironmentVariable("RabbitMq__Credentials__HostName"),
-                Environment.GetEnvironmentVariable("RabbitMq__Credentials__UserName"),
-                Environment.GetEnvironmentVariable("RabbitMq__Credentials__Password"),
-                Environment.GetEnvironmentVariable("RabbitMq__QueueName"));
-            var rabbitProvider = new RabbitMqProvider(credentials, Environment.GetEnvironmentVariable("RabbitMq__QueueName"));
+
+
+            string HostName = Environment.GetEnvironmentVariable("RabbitMq__Credentials__HostName") ?? ConfigurationManager.AppSettings["HostName"];
+            string UserName = Environment.GetEnvironmentVariable("RabbitMq__Credentials__UserName") ?? ConfigurationManager.AppSettings["UserName"];
+            string Password = Environment.GetEnvironmentVariable("RabbitMq__Credentials__Password") ?? ConfigurationManager.AppSettings["Password"];
+            string QueueName = Environment.GetEnvironmentVariable("RabbitMq__QueueName") ?? ConfigurationManager.AppSettings["QueueName"];
+
+
+            var credentials = new MqCredentials(HostName, UserName, Password, QueueName);
+            var rabbitProvider = new RabbitMqProvider(credentials, QueueName);
+
             rabbitProvider.Bind();
             rabbitProvider.Subscribe(ReceiveMessage.GetMes);
             Console.ReadLine();
         }
+
     }
 }

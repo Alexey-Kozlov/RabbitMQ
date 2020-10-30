@@ -1,14 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+using RabbitMQ.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using MediatR;
+using RabbitMQ.Commands;
+using AKDbHelpers.Helpers;
+using RabbitMQ.Models;
+using RabbitMQ.Handlers;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
+using RabbitMQ.Controllers;
 
 namespace RabbitMQ
 {
@@ -49,10 +57,15 @@ namespace RabbitMQ
                 p.AutoDelete = rabbitOptions.AutoDelete;
                 p.QueueName = rabbitOptions.QueueName;
             }));
-
-
-
+            services.AddScoped<ITestRepository, TestReporitory>();
             services.AddControllers();
+
+        }
+
+        public void ConfigureContainer(ContainerBuilder builder)
+        {
+            //инициализация autofac
+            builder.RegisterModule(new MediatorModule());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
