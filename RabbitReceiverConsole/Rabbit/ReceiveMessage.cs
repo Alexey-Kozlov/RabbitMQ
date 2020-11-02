@@ -7,6 +7,7 @@ using Serilog;
 using Autofac;
 using RabbitReceiverConsole.Commands;
 using RabbitReceiverConsole.Handlers;
+using System.Threading.Tasks;
 
 namespace RabbitReceiverConsole
 {
@@ -36,10 +37,15 @@ namespace RabbitReceiverConsole
             {
                 case GenericResult<MyTestNameModel> command2:
                     Log.Information($"Получено сообщение - {command2.Entity.TestName}");
+
+                    //Task.Run(async () => await _mediator.Publish(new Notifications("Тест уведомления 1")));
+                    _mediator.Publish(new Notifications("Тест уведомления 1"));
                     break;
                 case GenericResult<MyTestNameModel2> command2:
                     var sourceCommand = (BaseCommand<NewCommand, GenericResult<MyTestNameModel2>>)command;
                     Log.Information($"Получено сообщение - {command2.Entity.TestName}, параметр команды - {sourceCommand.Command.Message}");
+                    //Task.Run(async () => await _mediator.Publish(new Notifications("Тест уведомления 2")));
+                    _mediator.Publish(new Notifications("Тест уведомления 2"));
                     break;
             }
 

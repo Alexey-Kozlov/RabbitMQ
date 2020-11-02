@@ -16,6 +16,12 @@ namespace RabbitReceiverConsole
             builder.RegisterAssemblyTypes(typeof(GetStringByIdQuery).GetTypeInfo().Assembly)
                 .AsClosedTypesOf(typeof(IRequestHandler<,>));
 
+            //builder.RegisterAssemblyTypes(typeof(Notifications).GetTypeInfo().Assembly)
+            //    .AsClosedTypesOf(typeof(INotification));
+
+            //builder.RegisterType<Notifications>().As<INotification>().InstancePerLifetimeScope();
+
+            builder.RegisterGeneric(typeof(Notifications)).As(typeof(INotification));
 
             builder.Register<ServiceFactory>(context =>
             {
