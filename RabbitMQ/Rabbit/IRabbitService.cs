@@ -7,6 +7,6 @@ namespace RabbitMQ
 {
     public interface IRabbitService
     {
-        void Publish<T>(string routingKey, string message);
+        void Publish<T>(string message);
     }
 }

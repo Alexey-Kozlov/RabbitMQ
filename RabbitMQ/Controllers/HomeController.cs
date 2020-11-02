@@ -26,8 +26,6 @@ namespace RabbitMQ.Controllers
         public IActionResult Index()
         {
             Log.Information($"Sending data from controller - {DateTime.Now.ToString()}"); 
-            _queue.Send(DateTime.Now.ToString()); ;
-            Log.Information($"Sending data from controller successful.");
             return Ok();
         }
 
@@ -38,7 +36,7 @@ namespace RabbitMQ.Controllers
             {
                 Id = 1556
             };
-            
+
             var command = new BaseCommand<GetStringByIdQuery, GenericResult<MyTestNameModel>>(getStringCommand, $"Выполнение c1 - {DateTime.Now.ToString()}");
             var rez = _mediator.Send(command);           
             return Ok(rez.Result.Entity.TestName);
@@ -49,7 +47,8 @@ namespace RabbitMQ.Controllers
         {
             var getStringCommand = new NewCommand
             {
-                Id = id
+                Id = id,
+                Message = ""
             };
 
             var command = new BaseCommand<NewCommand, GenericResult<MyTestNameModel2>>(getStringCommand, $"Выполнение c2 - {DateTime.Now.ToString()}");

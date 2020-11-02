@@ -42,20 +42,21 @@ namespace RabbitMQ
             services.AddSingleton<IQueueProvider, RabbitMqProvider>(provider =>
             {
                 var credentials = new MqCredentials(rabbitOptions.Credentials.HostName, rabbitOptions.Credentials.UserName, 
-                    rabbitOptions.Credentials.Password, rabbitOptions.QueueName);
+                    rabbitOptions.Credentials.Password, rabbitOptions.Queues);
 
-                var rabbitProvider = new RabbitMqProvider(credentials, rabbitOptions.QueueName);
+                var rabbitProvider = new RabbitMqProvider(credentials, rabbitOptions.Queues, rabbitOptions.ExchangeName);
                 rabbitProvider.Bind();
 
-                //rabbitProvider.Subscribe(ReceiveMessage.GetMes);
+                //rabbitProvider.Subscribe(ReceiveMessage.GetMesAuth, "auth");
+                //rabbitProvider.Subscribe(ReceiveMessage.GetMesAuth2, "auth2");
 
                 return rabbitProvider;
             });
             services.AddSingleton<IRabbitService>(new RabbitService(p =>
             { 
                 p.Credentials = rabbitOptions.Credentials;
-                p.AutoDelete = rabbitOptions.AutoDelete;
-                p.QueueName = rabbitOptions.QueueName;
+                p.Queues = rabbitOptions.Queues;
+                p.ExchangeName = rabbitOptions.ExchangeName;
             }));
             services.AddScoped<ITestRepository, TestReporitory>();
             services.AddControllers();

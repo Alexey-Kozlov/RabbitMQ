@@ -1,8 +1,8 @@
 ﻿using MediatR;
-using RabbitMQ.Models;
+using RabbitReceiverConsole.Models;
 using AKDbHelpers.Helpers;
 
-namespace RabbitMQ.Commands
+namespace RabbitReceiverConsole.Commands
 {
     public class NewCommand : IRequest<GenericResult<MyTestNameModel2>>
     {

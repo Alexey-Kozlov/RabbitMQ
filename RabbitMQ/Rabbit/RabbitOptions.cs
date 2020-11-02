@@ -14,8 +14,9 @@ namespace RabbitMQ
 
     public class RabbitOptions
     {
-        public bool AutoDelete { get; set; }
-        public string QueueName { get; set; }
+        public List<string> Queues { get; set; }
         public Credentials Credentials { get; set; }
+        public string ExchangeName { get; set; }
     }
+
 }

@@ -20,7 +20,10 @@ namespace RabbitMQ.Handlers
 
         public async Task<GenericResult<MyTestNameModel2>> Handle(NewCommand request, CancellationToken cancellationToken)
         {
-            return await _testRepository.GetStringById2(request.Id, cancellationToken);
+            var rez = await _testRepository.GetStringById2(request.Id, cancellationToken);
+            //дописываем в команду некое значение. Потом его можно просмотреть в приемнике сообщений.
+            request.Message = rez.Entity.TestName;
+            return rez;
         }
     }
 }

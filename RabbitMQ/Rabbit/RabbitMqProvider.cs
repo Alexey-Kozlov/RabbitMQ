@@ -1,7 +1,7 @@
 ﻿using System;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Text;
 using Serilog;
 
@@ -9,15 +9,17 @@ namespace RabbitMQ
 {
     public class RabbitMqProvider : IQueueProvider, IDisposable
     {
-        private readonly string _QueueName;
+        private readonly List<string> _queues;
         private IConnection _connection;
         private IModel _channel;
         private string _consumer;
+        private string _exchangeName;
         private readonly ConnectionFactory _connectionFactory;
 
-        public RabbitMqProvider(MqCredentials credentials, string QueueName)
+        public RabbitMqProvider(MqCredentials credentials, List<string> Queues, string exchangeName)
         {
-            _QueueName = QueueName;
+            _queues = Queues;
+            _exchangeName = exchangeName;
             _connectionFactory = new ConnectionFactory
             {
                 HostName = credentials.HostName,
@@ -33,7 +35,7 @@ namespace RabbitMQ
 
         public bool ConnectionIsOpen => _connection?.IsOpen ?? false;
 
-        public void Subscribe(Action<string> callback)
+        public void Subscribe(Action<string> callback, string queueName)
         {
             if (!IsBinded)
             {
@@ -46,39 +48,33 @@ namespace RabbitMQ
                 {
                     var body = ea.Body.ToArray();
                     var message = Encoding.UTF8.GetString(body);
-                    Log.Information($"Сообщение получено из очереди {_QueueName}: {message}");
+                    Log.Information($"Получено сообщение : {message}");
                     callback(message);
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, $"Ошибка получения сообщения из очереди {_QueueName}");
+                    Log.Error(ex, $"Ошибка получения сообщения из очереди ");
                 }
                 finally
                 {
                     _channel.BasicAck(ea.DeliveryTag, false);
                 }
             };
-            _consumer = _channel.BasicConsume(queue: _QueueName, consumer: consumer);
-            Log.Information($"Подписка на очередь {_QueueName} создана");
+            _channel.BasicConsume(queue: queueName, consumer: consumer);
+            Log.Information($"Подписка на очередь {queueName} создана");
         }
+
 
         public void Send(string message)
-        {
-            Send(message, _QueueName);
-        }
-
-        public void Send(string message, string routingKey)
         {
             if (!IsBinded)
             {
                 throw new InvalidOperationException("Связь с очередью отутствует");
             }
 
-            Log.Information($"Сообщение отправляется: {message} в очередь {_QueueName}, routing key {routingKey}");
-            Serilog.Log.Information("в очередь");
             var body = Encoding.UTF8.GetBytes(message);
-            _channel.BasicPublish("", _QueueName, null, body);
-            Log.Information($"Сообщение отправлено: {message} в очередь {_QueueName}, routing key {routingKey}");
+            _channel.BasicPublish(_exchangeName, "", null, body);
+            Log.Information($"Сообщение: {message} отправлено.");
         }
 
         public void Bind()
@@ -89,8 +85,14 @@ namespace RabbitMQ
             }
             _connection = _connectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
+            _channel.ExchangeDeclare(_exchangeName, ExchangeType.Fanout, true, false);
             if (MaxThreads != 0)
                 _channel.BasicQos(0, (ushort)MaxThreads, false);
+            foreach(string queue in _queues)
+            {
+                _channel.QueueBind(queue, _exchangeName, "");
+            }
+            
             IsBinded = true;
         }
 
@@ -116,5 +118,6 @@ namespace RabbitMQ
             _channel?.Dispose();
             _connection?.Dispose();
         }
+
     }
 }

@@ -4,7 +4,8 @@ using RabbitMQ.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,8 +32,37 @@ namespace RabbitMQ.Handlers
             //собственно выполнение команды
             var result = await _mediator.Send(command, cancellationToken);
             //опять что-то общее, например, посылаем в очередь
-            _queue.Send($"Выполнена команда - {logMessage}");
+            var serString = JsonConvert.SerializeObject(message, Formatting.None, new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.All,
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+                SerializationBinder = new TypeNameAssemblyExcludingSerializationBinder("RabbitReceiverConsole")
+            });
+
+            _queue.Send($"{serString}");
+            //_queue.Send($"{JsonConvert.SerializeObject(message, Formatting.None)}");
             return result;
+        }
+    }
+
+    public class TypeNameAssemblyExcludingSerializationBinder : ISerializationBinder
+    {
+        public TypeNameAssemblyExcludingSerializationBinder(string namespaceToTypes) 
+        {
+            _namespaceToTypes = namespaceToTypes;
+        }
+        private readonly string _namespaceToTypes;
+
+        public void BindToName(Type serializedType, out string assemblyName, out string typeName)
+        {
+            assemblyName = _namespaceToTypes;
+            typeName = serializedType.FullName.Replace("RabbitMQ", _namespaceToTypes).Trim('.');
+        }
+
+        public Type BindToType(string assemblyName, string typeName)
+        {
+            var typeNameWithNamespace = $"{_namespaceToTypes}.{typeName}";
+            return Type.GetType(typeNameWithNamespace);
         }
     }
 }

@@ -1,11 +1,15 @@
 ﻿using System;
 using Serilog;
 using System.Configuration;
+using Autofac;
+using Microsoft.Extensions.DependencyInjection;
+using Autofac.Extensions.DependencyInjection;
 
 namespace RabbitReceiverConsole
 {
     class Program
     {
+        private static IContainer container { get; set; }
         static void Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
@@ -20,11 +24,17 @@ namespace RabbitReceiverConsole
             string QueueName = Environment.GetEnvironmentVariable("RabbitMq__QueueName") ?? ConfigurationManager.AppSettings["QueueName"];
 
 
+            var containerBuilder = new ContainerBuilder();
+            containerBuilder.RegisterModule(new MediatorModule());
+            container = containerBuilder.Build();
+
+
             var credentials = new MqCredentials(HostName, UserName, Password, QueueName);
             var rabbitProvider = new RabbitMqProvider(credentials, QueueName);
 
             rabbitProvider.Bind();
-            rabbitProvider.Subscribe(ReceiveMessage.GetMes);
+            ReceiveMessage recMessage = new ReceiveMessage(container);
+            rabbitProvider.Subscribe(recMessage.GetMes);
             Console.ReadLine();
         }
 

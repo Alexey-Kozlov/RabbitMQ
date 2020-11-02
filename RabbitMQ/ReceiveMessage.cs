@@ -2,22 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace RabbitMQ
 {
     public class ReceiveMessage
     {
-
-        public ReceiveMessage()
+        public static void GetMesAuth(string mes)
         {
-
+            string dd = mes;
         }
-
-        public static void GetMes(string mes)
+        public static void GetMesAuth2(string mes)
         {
-
-            Log.Information($"Получено сообщение - {mes}");
+            string aa = mes;
         }
     }
 }
