@@ -10,8 +10,7 @@ using AKDbHelpers.Helpers;
 namespace RabbitMQ.Handlers
 {
     public class GetStringByIdHandler : BaseCommandHandler<GetStringByIdQuery, GenericResult<MyTestNameModel>>, 
-        IRequestHandler<GetStringByIdQuery, GenericResult<MyTestNameModel>>,
-        IRequestHandler<NewCommand, GenericResult<MyTestNameModel2>>
+        IRequestHandler<GetStringByIdQuery, GenericResult<MyTestNameModel>>
     {
         private readonly ITestRepository _testRepository;
 
@@ -25,12 +24,5 @@ namespace RabbitMQ.Handlers
             return await _testRepository.GetStringById(request.Id, cancellationToken);
         }
 
-        public async Task<GenericResult<MyTestNameModel2>> Handle(NewCommand request, CancellationToken cancellationToken)
-        {
-            var rez = await _testRepository.GetStringById2(request.Id, cancellationToken);
-            //дописываем в команду некое значение. Потом его можно просмотреть в приемнике сообщений.
-            request.Message = rez.Entity.TestName;
-            return rez;
-        }
     }
 }

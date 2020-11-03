@@ -40,7 +40,6 @@ namespace RabbitMQ.Handlers
             });
 
             _queue.Send($"{serString}");
-            //_queue.Send($"{JsonConvert.SerializeObject(message, Formatting.None)}");
             return result;
         }
     }
