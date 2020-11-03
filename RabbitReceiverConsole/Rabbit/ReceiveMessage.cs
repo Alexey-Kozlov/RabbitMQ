@@ -23,7 +23,7 @@ namespace RabbitReceiverConsole
 
         }
 
-        public void GetMes(string message)
+        public async void GetMes(string message)
         {
 
             var command = JsonConvert.DeserializeObject(message, new JsonSerializerSettings()
@@ -39,13 +39,13 @@ namespace RabbitReceiverConsole
                     Log.Information($"Получено сообщение - {command2.Entity.TestName}");
 
                     //Task.Run(async () => await _mediator.Publish(new Notifications("Тест уведомления 1")));
-                    _mediator.Publish(new Notifications("Тест уведомления 1"));
+                    await _mediator.Publish(new Notifications("Тест уведомления 1"));
                     break;
                 case GenericResult<MyTestNameModel2> command2:
                     var sourceCommand = (BaseCommand<NewCommand, GenericResult<MyTestNameModel2>>)command;
                     Log.Information($"Получено сообщение - {command2.Entity.TestName}, параметр команды - {sourceCommand.Command.Message}");
                     //Task.Run(async () => await _mediator.Publish(new Notifications("Тест уведомления 2")));
-                    _mediator.Publish(new Notifications("Тест уведомления 2"));
+                    await _mediator.Publish(new Notifications("Тест уведомления 2"));
                     break;
             }
 
